@@ -39,4 +39,10 @@ class AppColors {
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
+  
+  static const LinearGradient purpleGradient = LinearGradient(
+    colors: [Color(0xFF8A2BE2), Color(0xFF4B0082)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
 }

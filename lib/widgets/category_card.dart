@@ -31,10 +31,11 @@ class CategoryCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: _getCategoryGradient(category.id)
-                        .colors
-                        .first
-                        .withOpacity(0.3),
+                    color: Color.fromRGBO(
+                        _getCategoryGradient(category.id).colors.first.red,
+                        _getCategoryGradient(category.id).colors.first.green,
+                        _getCategoryGradient(category.id).colors.first.blue,
+                        0.3),
                     blurRadius: 12,
                     offset: const Offset(0, 6),
                   ),

@@ -58,7 +58,7 @@ class _StateCard extends StatelessWidget {
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.15),
+                color: Color.fromRGBO(0, 0, 0, 0.15),
                 blurRadius: 15,
                 offset: const Offset(0, 8),
               ),
@@ -75,7 +75,7 @@ class _StateCard extends StatelessWidget {
                   height: 120,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: AppColors.white.withOpacity(0.1),
+                    color: Color.fromRGBO(AppColors.white.red, AppColors.white.green, AppColors.white.blue, 0.1),
                   ),
                 ),
               ),
@@ -102,7 +102,7 @@ class _StateCard extends StatelessWidget {
                     Text(
                       theme.description,
                       style: AppTextStyles.bodyMedium.copyWith(
-                        color: AppColors.white.withOpacity(0.9),
+                        color: Color.fromRGBO(AppColors.white.red, AppColors.white.green, AppColors.white.blue, 0.9),
                         height: 1.4,
                       ),
                     ),
@@ -116,7 +116,7 @@ class _StateCard extends StatelessWidget {
                         vertical: 6,
                       ),
                       decoration: BoxDecoration(
-                        color: AppColors.white.withOpacity(0.2),
+                        color: Color.fromRGBO(AppColors.white.red, AppColors.white.green, AppColors.white.blue, 0.2),
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: Text(

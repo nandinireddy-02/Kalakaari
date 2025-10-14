@@ -16,6 +16,51 @@ class ProductCard extends StatelessWidget {
     this.width = 180,
   });
 
+  Widget _buildImage(String imagePath) {
+    if (imagePath.startsWith('assets/')) {
+      // Local asset image
+      return Image.asset(
+        imagePath,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => Container(
+          color: AppColors.lightGrey,
+          child: const Center(
+            child: Icon(
+              Icons.image_not_supported,
+              color: AppColors.grey,
+              size: 32,
+            ),
+          ),
+        ),
+      );
+    } else {
+      // Network image
+      return CachedNetworkImage(
+        imageUrl: imagePath,
+        fit: BoxFit.cover,
+        placeholder: (context, url) => Container(
+          color: AppColors.lightGrey,
+          child: const Center(
+            child: CircularProgressIndicator(
+              color: AppColors.saffron,
+              strokeWidth: 2,
+            ),
+          ),
+        ),
+        errorWidget: (context, url, error) => Container(
+          color: AppColors.lightGrey,
+          child: const Center(
+            child: Icon(
+              Icons.image_not_supported,
+              color: AppColors.grey,
+              size: 32,
+            ),
+          ),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -29,7 +74,7 @@ class ProductCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.08),
+                color: Color.fromRGBO(0, 0, 0, 0.08),
                 blurRadius: 12,
                 offset: const Offset(0, 4),
               ),
@@ -51,29 +96,7 @@ class ProductCard extends StatelessWidget {
                       width: double.infinity,
                       color: AppColors.lightGrey,
                       child: product.images.isNotEmpty
-                          ? CachedNetworkImage(
-                              imageUrl: product.images.first,
-                              fit: BoxFit.cover,
-                              placeholder: (context, url) => Container(
-                                color: AppColors.lightGrey,
-                                child: const Center(
-                                  child: CircularProgressIndicator(
-                                    color: AppColors.saffron,
-                                    strokeWidth: 2,
-                                  ),
-                                ),
-                              ),
-                              errorWidget: (context, url, error) => Container(
-                                color: AppColors.lightGrey,
-                                child: const Center(
-                                  child: Icon(
-                                    Icons.image_not_supported,
-                                    color: AppColors.grey,
-                                    size: 32,
-                                  ),
-                                ),
-                              ),
-                            )
+                          ? _buildImage(product.images.first)
                           : const Center(
                               child: Icon(
                                 Icons.image,
@@ -115,7 +138,7 @@ class ProductCard extends StatelessWidget {
                       width: 32,
                       height: 32,
                       decoration: BoxDecoration(
-                        color: AppColors.white.withOpacity(0.9),
+                        color: Color.fromRGBO(AppColors.white.red, AppColors.white.green, AppColors.white.blue, 0.9),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(

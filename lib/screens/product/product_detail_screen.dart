@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 // import 'package:carousel_slider/carousel_slider.dart' as carousel;
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import '../../utils/colors.dart';
@@ -27,6 +28,51 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
   int _currentImageIndex = 0;
   int _quantity = 1;
   bool _isFavorite = false;
+
+  Widget _buildImage(String imagePath) {
+    if (imagePath.startsWith('assets/')) {
+      // Local asset image
+      return Image.asset(
+        imagePath,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => Container(
+          color: AppColors.lightGrey,
+          child: const Center(
+            child: Icon(
+              Icons.image_not_supported,
+              color: AppColors.grey,
+              size: 64,
+            ),
+          ),
+        ),
+      );
+    } else {
+      // Network image
+      return CachedNetworkImage(
+        imageUrl: imagePath,
+        fit: BoxFit.cover,
+        placeholder: (context, url) => Container(
+          color: AppColors.lightGrey,
+          child: const Center(
+            child: CircularProgressIndicator(
+              color: AppColors.saffron,
+              strokeWidth: 2,
+            ),
+          ),
+        ),
+        errorWidget: (context, url, error) => Container(
+          color: AppColors.lightGrey,
+          child: const Center(
+            child: Icon(
+              Icons.image_not_supported,
+              color: AppColors.grey,
+              size: 64,
+            ),
+          ),
+        ),
+      );
+    }
+  }
 
   @override
   void initState() {
@@ -150,13 +196,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
                 return Container(
                   width: double.infinity,
                   color: AppColors.lightGrey,
-                  child: const Center(
-                    child: Icon(
-                      Icons.image,
-                      size: 64,
-                      color: AppColors.grey,
-                    ),
-                  ),
+                  child: _buildImage(widget.product.images[index]),
                 );
               },
             ),

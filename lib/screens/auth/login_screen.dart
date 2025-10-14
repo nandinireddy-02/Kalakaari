@@ -131,7 +131,7 @@ class _LoginScreenState extends State<LoginScreen>
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: AppColors.saffron.withOpacity(0.3),
+                color: Color.fromRGBO(AppColors.saffron.red, AppColors.saffron.green, AppColors.saffron.blue, 0.3),
                 blurRadius: 20,
                 offset: const Offset(0, 10),
               ),
@@ -185,10 +185,18 @@ class _LoginScreenState extends State<LoginScreen>
               if (value == null || value.isEmpty) {
                 return 'Please enter your email';
               }
-              if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+\$').hasMatch(value)) {
-                return 'Please enter a valid email';
+              
+              // Super permissive validation for demo
+              if (value.length < 3) {
+                return 'Email too short';
               }
-              return null;
+              
+              // Accept anything that has @ symbol for demo purposes
+              if (!value.contains('@')) {
+                return 'Please include @ in email';
+              }
+              
+              return null; // Always pass if basic checks pass
             },
           ),
           
@@ -388,7 +396,12 @@ class _LoginScreenState extends State<LoginScreen>
   }
   
   Future<void> _handleLogin() async {
-    if (!_formKey.currentState!.validate()) return;
+    // Demo mode: Skip validation for specific demo credentials
+    if (_emailController.text == 'demo' && _passwordController.text == 'demo') {
+      // Using demo credentials - bypassing validation
+    } else if (!_formKey.currentState!.validate()) {
+      return;
+    }
     
     setState(() {
       _isLoading = true;
