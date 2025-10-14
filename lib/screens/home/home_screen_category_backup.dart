@@ -3,14 +3,13 @@ import 'package:flutter/services.dart';
 import '../../utils/colors.dart';
 import '../../utils/theme.dart';
 import '../../models/product.dart';
-
+import '../../models/category.dart';
 import '../../services/dummy_data.dart';
 import '../../widgets/product_card.dart';
-
+import '../../widgets/category_card.dart';
 import '../categories/categories_screen.dart';
 import '../product/product_detail_screen.dart';
 import '../state/state_products_screen.dart';
-import '../category/category_products_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -27,41 +26,7 @@ class _HomeScreenState extends State<HomeScreen>
   
   int _currentBottomNavIndex = 0;
   final List<Product> _trendingProducts = DummyData.products;
-  
-  // Search state
-  String _searchQuery = '';
-  bool _isSearching = false;
-  List<Product> _searchResults = [];
-  // Dynamic categories from products
-  List<Map<String, dynamic>> get _dynamicCategories {
-    Map<String, int> categoryCount = {};
-    Map<String, IconData> categoryIcons = {
-      'Handloom': Icons.web,
-      'Metalwork': Icons.construction,
-      'Paintings': Icons.palette,
-      'Pottery': Icons.emoji_objects,
-      'Woodwork': Icons.carpenter,
-      'Traditional Jewelry': Icons.diamond,
-      'Footwear': Icons.directions_walk,
-      'Bamboo Crafts': Icons.eco,
-      'Terracotta': Icons.emoji_nature,
-    };
-    
-    // Count products per category
-    for (var product in _filteredProducts) {
-      categoryCount[product.category] = (categoryCount[product.category] ?? 0) + 1;
-    }
-    
-    List<Map<String, dynamic>> categories = categoryCount.entries.map((entry) => {
-      'name': entry.key,
-      'count': entry.value,
-      'icon': categoryIcons[entry.key] ?? Icons.category,
-      'products': _trendingProducts.where((p) => p.category == entry.key).toList(),
-    }).toList();
-    
-    categories.sort((a, b) => (b['count'] as int).compareTo(a['count'] as int));
-    return categories;
-  }
+  final List<Category> _categories = DummyData.categories;
   
   // Page controllers for each state section
   final Map<String, PageController> _statePageControllers = {
@@ -112,9 +77,6 @@ class _HomeScreenState extends State<HomeScreen>
     ));
     
     _animationController.forward();
-    
-    // Listen to search changes
-    _searchController.addListener(_onSearchChanged);
   }
 
   @override
@@ -126,43 +88,6 @@ class _HomeScreenState extends State<HomeScreen>
       controller.dispose();
     }
     super.dispose();
-  }
-
-  void _onSearchChanged() {
-    print('Search changed: ${_searchController.text}'); // Debug print
-    setState(() {
-      _searchQuery = _searchController.text.toLowerCase();
-      _isSearching = _searchQuery.isNotEmpty;
-      if (_isSearching) {
-        _searchResults = _performSearch(_searchQuery);
-        print('Search results count: ${_searchResults.length}'); // Debug print
-      } else {
-        _searchResults.clear();
-      }
-    });
-  }
-
-  List<Product> _performSearch(String query) {
-    if (query.isEmpty) return [];
-    
-    return _trendingProducts.where((product) {
-      // Search in product name, description, category, state, and artisan
-      return product.name.toLowerCase().contains(query) ||
-             product.description.toLowerCase().contains(query) ||
-             product.category.toLowerCase().contains(query) ||
-             product.state.toLowerCase().contains(query) ||
-             product.artisanName.toLowerCase().contains(query) ||
-             product.heritage.toLowerCase().contains(query);
-    }).toList();
-  }
-
-  void _clearSearch() {
-    _searchController.clear();
-    setState(() {
-      _searchQuery = '';
-      _isSearching = false;
-      _searchResults.clear();
-    });
   }
   
   void _navigateToStateProducts(String stateName, List<Product> products) {
@@ -205,7 +130,7 @@ class _HomeScreenState extends State<HomeScreen>
                   color: _showOnlyAvailable ? AppColors.saffron : AppColors.cream,
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                    color: Color.fromRGBO(AppColors.saffron.red, AppColors.saffron.green, AppColors.saffron.blue, 0.3),
+                    color: AppColors.saffron.withOpacity(0.3),
                   ),
                 ),
                 child: Row(
@@ -277,7 +202,7 @@ class _HomeScreenState extends State<HomeScreen>
                 height: 4,
                 margin: const EdgeInsets.symmetric(vertical: 12),
                 decoration: BoxDecoration(
-                  color: Color.fromRGBO(AppColors.grey.red, AppColors.grey.green, AppColors.grey.blue, 0.3),
+                  color: AppColors.grey.withOpacity(0.3),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -299,7 +224,7 @@ class _HomeScreenState extends State<HomeScreen>
                         color: AppColors.cream,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: Color.fromRGBO(AppColors.saffron.red, AppColors.saffron.green, AppColors.saffron.blue, 0.2),
+                          color: AppColors.saffron.withOpacity(0.2),
                         ),
                       ),
                       child: Row(
@@ -368,7 +293,7 @@ class _HomeScreenState extends State<HomeScreen>
                               Text(
                                 'Total Products',
                                 style: AppTextStyles.bodySmall.copyWith(
-                                  color: Color.fromRGBO(AppColors.white.red, AppColors.white.green, AppColors.white.blue, 0.9),
+                                  color: AppColors.white.withOpacity(0.9),
                                 ),
                               ),
                             ],
@@ -376,7 +301,7 @@ class _HomeScreenState extends State<HomeScreen>
                           Container(
                             width: 1,
                             height: 40,
-                            color: Color.fromRGBO(AppColors.white.red, AppColors.white.green, AppColors.white.blue, 0.3),
+                            color: AppColors.white.withOpacity(0.3),
                           ),
                           Column(
                             children: [
@@ -389,7 +314,7 @@ class _HomeScreenState extends State<HomeScreen>
                               Text(
                                 'Available',
                                 style: AppTextStyles.bodySmall.copyWith(
-                                  color: Color.fromRGBO(AppColors.white.red, AppColors.white.green, AppColors.white.blue, 0.9),
+                                  color: AppColors.white.withOpacity(0.9),
                                 ),
                               ),
                             ],
@@ -448,19 +373,14 @@ class _HomeScreenState extends State<HomeScreen>
                 // Header with Search
                 _buildHeader(),
                 
-                // Show search results when searching, otherwise show normal content
-                if (_isSearching) ...[
-                  _buildSearchResults(),
-                ] else ...[
-                  // Categories Grid
-                  _buildCategoriesSection(),
-                  
-                  // State-wise Carousels
-                  _buildStateCarousels(),
-                  
-                  // Trending Products
-                  _buildTrendingSection(),
-                ],
+                // Categories Grid
+                _buildCategoriesSection(),
+                
+                // State-wise Carousels
+                _buildStateCarousels(),
+                
+                // Trending Products
+                _buildTrendingSection(),
                 
                 // Bottom Spacing
                 const SizedBox(height: 100),
@@ -546,7 +466,7 @@ class _HomeScreenState extends State<HomeScreen>
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Color.fromRGBO(0, 0, 0, 0.1),
+                  color: Colors.black.withOpacity(0.1),
                   blurRadius: 10,
                   offset: const Offset(0, 5),
                 ),
@@ -554,7 +474,6 @@ class _HomeScreenState extends State<HomeScreen>
             ),
             child: TextField(
               controller: _searchController,
-              onChanged: (value) => _onSearchChanged(), // Explicit callback
               decoration: InputDecoration(
                 hintText: 'Search for crafts, artisans, states...',
                 hintStyle: AppTextStyles.bodyMedium.copyWith(
@@ -564,28 +483,15 @@ class _HomeScreenState extends State<HomeScreen>
                   Icons.search,
                   color: AppColors.saffron,
                 ),
-                suffixIcon: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (_isSearching)
-                      IconButton(
-                        icon: const Icon(
-                          Icons.clear,
-                          color: AppColors.grey,
-                        ),
-                        onPressed: _clearSearch,
-                      ),
-                    IconButton(
-                      icon: const Icon(
-                        Icons.tune,
-                        color: AppColors.saffron,
-                      ),
-                      onPressed: () {
-                        _showFilterBottomSheet();
-                        HapticFeedback.lightImpact();
-                      },
-                    ),
-                  ],
+                suffixIcon: IconButton(
+                  icon: const Icon(
+                    Icons.tune,
+                    color: AppColors.saffron,
+                  ),
+                  onPressed: () {
+                    _showFilterBottomSheet();
+                    HapticFeedback.lightImpact();
+                  },
                 ),
                 border: InputBorder.none,
                 contentPadding: const EdgeInsets.all(16),
@@ -631,24 +537,24 @@ class _HomeScreenState extends State<HomeScreen>
           ),
         ),
         
-        _dynamicCategories.isEmpty 
-          ? _buildEmptyStateMessage()
-          : SizedBox(
-              height: 130,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                physics: const BouncingScrollPhysics(),
-                itemCount: _dynamicCategories.length,
-                itemBuilder: (context, index) {
-                  final categoryData = _dynamicCategories[index];
-                  return AnimatedContainer(
-                    duration: Duration(milliseconds: 100 + (index * 50)),
-                    child: _buildDynamicCategoryCard(categoryData),
-                  );
+        SizedBox(
+          height: 120,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            itemCount: _categories.length,
+            itemBuilder: (context, index) {
+              final category = _categories[index];
+              return CategoryCard(
+                category: category,
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  // TODO: Navigate to category products
                 },
-              ),
-            ),
+              );
+            },
+          ),
+        ),
       ],
     );
   }
@@ -758,7 +664,7 @@ class _HomeScreenState extends State<HomeScreen>
                     Text(
                       subtitle,
                       style: AppTextStyles.bodyMedium.copyWith(
-                        color: Color.fromRGBO(AppColors.white.red, AppColors.white.green, AppColors.white.blue, 0.9),
+                        color: AppColors.white.withOpacity(0.9),
                       ),
                     ),
                   ],
@@ -769,7 +675,7 @@ class _HomeScreenState extends State<HomeScreen>
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: Color.fromRGBO(AppColors.white.red, AppColors.white.green, AppColors.white.blue, 0.2),
+                    color: AppColors.white.withOpacity(0.2),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
@@ -790,7 +696,7 @@ class _HomeScreenState extends State<HomeScreen>
                 child: Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Color.fromRGBO(AppColors.white.red, AppColors.white.green, AppColors.white.blue, 0.2),
+                    color: AppColors.white.withOpacity(0.2),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Icon(
@@ -868,7 +774,7 @@ class _HomeScreenState extends State<HomeScreen>
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: Color.fromRGBO(0, 0, 0, 0.1),
+                          color: Colors.black.withOpacity(0.1),
                           blurRadius: 8,
                           offset: const Offset(0, 4),
                         ),
@@ -904,7 +810,7 @@ class _HomeScreenState extends State<HomeScreen>
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: Color.fromRGBO(0, 0, 0, 0.1),
+                          color: Colors.black.withOpacity(0.1),
                           blurRadius: 8,
                           offset: const Offset(0, 4),
                         ),
@@ -969,7 +875,7 @@ class _HomeScreenState extends State<HomeScreen>
         color: AppColors.white,
         boxShadow: [
           BoxShadow(
-            color: Color.fromRGBO(0, 0, 0, 0.1),
+            color: Colors.black.withOpacity(0.1),
             blurRadius: 10,
             offset: const Offset(0, -5),
           ),
@@ -1019,414 +925,6 @@ class _HomeScreenState extends State<HomeScreen>
             label: 'Profile',
           ),
         ],
-      ),
-    );
-  }
-  
-  Color _getCategoryColor(String categoryName) {
-    switch (categoryName.toLowerCase()) {
-      case 'handloom':
-        return const Color(0xFF9C27B0); // Purple
-      case 'metalwork':
-        return const Color(0xFF616161); // Grey
-      case 'paintings':
-        return const Color(0xFFFF9800); // Orange
-      case 'pottery':
-        return const Color(0xFF795548); // Brown
-      case 'woodwork':
-        return const Color(0xFF388E3C); // Green
-      case 'traditional jewelry':
-        return const Color(0xFFE91E63); // Pink
-      case 'footwear':
-        return const Color(0xFF1976D2); // Blue
-      case 'bamboo crafts':
-        return const Color(0xFF4CAF50); // Light Green
-      case 'terracotta':
-        return const Color(0xFFFF5722); // Deep Orange
-      default:
-        return AppColors.saffron;
-    }
-  }
-
-  Widget _buildDynamicCategoryCard(Map<String, dynamic> categoryData) {
-    Color categoryColor = _getCategoryColor(categoryData['name']);
-    
-    return Container(
-      width: 100,
-      margin: const EdgeInsets.only(right: 16),
-      child: _HoverableCategoryCard(
-        categoryData: categoryData,
-        categoryColor: categoryColor,
-        onTap: () {
-          HapticFeedback.lightImpact();
-          
-          // Debug: Print category data to ensure products are available
-          print('Navigating to ${categoryData['name']} with ${categoryData['products'].length} products');
-          
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => CategoryProductsScreen(
-                categoryName: categoryData['name'],
-                products: List<Product>.from(categoryData['products']),
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-  
-  Widget _buildEmptyStateMessage() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      margin: const EdgeInsets.symmetric(horizontal: 20),
-      decoration: BoxDecoration(
-        color: AppColors.cream,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: Color.fromRGBO(AppColors.saffron.red, AppColors.saffron.green, AppColors.saffron.blue, 0.2),
-        ),
-      ),
-      child: Column(
-        children: [
-          Icon(
-            Icons.category_outlined,
-            size: 48,
-            color: Color.fromRGBO(AppColors.saffron.red, AppColors.saffron.green, AppColors.saffron.blue, 0.7),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            'No Categories Available',
-            style: AppTextStyles.bodyLarge.copyWith(
-              fontWeight: FontWeight.w600,
-              color: AppColors.darkGrey,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Categories will appear here when products are added',
-            textAlign: TextAlign.center,
-            style: AppTextStyles.bodySmall.copyWith(
-              color: AppColors.grey,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSearchResults() {
-    return Padding(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Search Results Header
-          Row(
-            children: [
-              Icon(
-                Icons.search,
-                color: AppColors.saffron,
-                size: 20,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                'Search Results',
-                style: AppTextStyles.heading3,
-              ),
-              const SizedBox(width: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: AppColors.saffron.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  '${_searchResults.length} found',
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.saffron,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          
-          const SizedBox(height: 16),
-          
-          if (_searchResults.isEmpty) ...[
-            // No Results Found
-            Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const SizedBox(height: 60),
-                  Container(
-                    padding: const EdgeInsets.all(24),
-                    decoration: BoxDecoration(
-                      color: AppColors.cream,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.search_off,
-                      size: 48,
-                      color: AppColors.grey,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  Text(
-                    'No results found',
-                    style: AppTextStyles.heading3.copyWith(
-                      color: AppColors.darkGrey,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Try different keywords like "pottery", "silk", or state names',
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      color: AppColors.grey,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 60),
-                ],
-              ),
-            ),
-          ] else ...[
-            // Search Results Grid
-            GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                childAspectRatio: 0.75,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-              ),
-              itemCount: _searchResults.length,
-              itemBuilder: (context, index) {
-                final product = _searchResults[index];
-                return ProductCard(
-                  product: product,
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => ProductDetailScreen(product: product),
-                      ),
-                    );
-                  },
-                );
-              },
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-class _HoverableCategoryCard extends StatefulWidget {
-  final Map<String, dynamic> categoryData;
-  final Color categoryColor;
-  final VoidCallback onTap;
-  
-  const _HoverableCategoryCard({
-    required this.categoryData,
-    required this.categoryColor,
-    required this.onTap,
-  });
-  
-  @override
-  State<_HoverableCategoryCard> createState() => _HoverableCategoryCardState();
-}
-
-class _HoverableCategoryCardState extends State<_HoverableCategoryCard>
-    with SingleTickerProviderStateMixin {
-  bool _isHovered = false;
-  late AnimationController _animationController;
-  late Animation<double> _scaleAnimation;
-  late Animation<double> _shadowAnimation;
-  
-  @override
-  void initState() {
-    super.initState();
-    _animationController = AnimationController(
-      duration: const Duration(milliseconds: 200),
-      vsync: this,
-    );
-    
-    _scaleAnimation = Tween<double>(
-      begin: 1.0,
-      end: 1.05,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    ));
-    
-    _shadowAnimation = Tween<double>(
-      begin: 15.0,
-      end: 25.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    ));
-  }
-  
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
-  }
-  
-  void _onHoverEnter() {
-    setState(() {
-      _isHovered = true;
-    });
-    _animationController.forward();
-  }
-  
-  void _onHoverExit() {
-    setState(() {
-      _isHovered = false;
-    });
-    _animationController.reverse();
-  }
-  
-  @override
-  Widget build(BuildContext context) {
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      onEnter: (_) => _onHoverEnter(),
-      onExit: (_) => _onHoverExit(),
-      child: GestureDetector(
-        onTap: widget.onTap,
-        child: AnimatedBuilder(
-          animation: _animationController,
-          builder: (context, child) {
-            return Transform.scale(
-              scale: _scaleAnimation.value,
-              child: Column(
-                children: [
-                  // Enhanced Icon Container with Hover Effect
-                  Container(
-                    width: 70,
-                    height: 70,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          widget.categoryColor,
-                          Color.fromRGBO(widget.categoryColor.red, widget.categoryColor.green, widget.categoryColor.blue, 0.7),
-                        ],
-                      ),
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Color.fromRGBO(widget.categoryColor.red, widget.categoryColor.green, widget.categoryColor.blue, _isHovered ? 0.6 : 0.4),
-                          blurRadius: _shadowAnimation.value,
-                          offset: const Offset(0, 6),
-                          spreadRadius: _isHovered ? 2 : 1,
-                        ),
-                      ],
-                    ),
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        // Main Icon with pulse effect when hovered
-                        AnimatedContainer(
-                          duration: const Duration(milliseconds: 200),
-                          child: Icon(
-                            widget.categoryData['icon'],
-                            color: AppColors.white,
-                            size: _isHovered ? 32 : 28,
-                          ),
-                        ),
-                        // Subtle shine effect
-                        Positioned(
-                          top: 15,
-                          left: 15,
-                          child: AnimatedOpacity(
-                            opacity: _isHovered ? 0.6 : 0.3,
-                            duration: const Duration(milliseconds: 200),
-                            child: Container(
-                              width: 12,
-                              height: 12,
-                              decoration: BoxDecoration(
-                                color: AppColors.white,
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  
-                  const SizedBox(height: 8),
-                  
-                  // Category Name with better styling
-                  AnimatedDefaultTextStyle(
-                    duration: const Duration(milliseconds: 200),
-                    style: AppTextStyles.bodySmall.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: _isHovered ? widget.categoryColor : AppColors.darkGrey,
-                      height: 1.2,
-                    ),
-                    child: Text(
-                      widget.categoryData['name'],
-                      textAlign: TextAlign.center,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  
-                  const SizedBox(height: 4),
-                  
-                  // Enhanced Count Badge
-                  AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Color.fromRGBO(widget.categoryColor.red, widget.categoryColor.green, widget.categoryColor.blue, _isHovered ? 0.3 : 0.2),
-                          Color.fromRGBO(widget.categoryColor.red, widget.categoryColor.green, widget.categoryColor.blue, _isHovered ? 0.2 : 0.1),
-                        ],
-                      ),
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(
-                        color: Color.fromRGBO(widget.categoryColor.red, widget.categoryColor.green, widget.categoryColor.blue, _isHovered ? 0.5 : 0.3),
-                        width: _isHovered ? 1.5 : 1,
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.inventory_2,
-                          size: 10,
-                          color: widget.categoryColor,
-                        ),
-                        const SizedBox(width: 2),
-                        Text(
-                          '${widget.categoryData['count']}',
-                          style: AppTextStyles.bodySmall.copyWith(
-                            color: widget.categoryColor,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 10,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
-        ),
       ),
     );
   }
