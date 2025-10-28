@@ -1,9 +1,0 @@
-@echo off
-title Kalakaari Flutter App
-echo Starting Kalakaari Indian Artisan Marketplace...
-cd /d "C:\Users\bapat\OneDrive\Desktop\Kalakaari"
-echo Building Flutter web app...
-flutter build web
-echo Starting server...
-cd build\web
-npx serve -s . -p 57567
